@@ -1,0 +1,148 @@
+// Transform number to letters
+  public getUnits(numUnit){
+    const numUnits = {
+      1: 'UN',
+      2: 'DOS',
+      3: 'TRES',
+      4: 'CUATRO',
+      5: 'CINCO',
+      6: 'SEIS',
+      7: 'SIETE',
+      8: 'OCHO',
+      9: 'NUEVE',
+    }
+    return numUnits[numUnit] ?? '';
+  }
+
+  public getDozens(dozenNum) {
+    const dozen = Math.floor(dozenNum / 10);
+    const unit = dozenNum - (dozen * 10)
+
+    const dozenUnits = {
+      0: 'DIEZ',
+      1: 'ONCE',
+      2: 'DOCE',
+      3: 'TRECE',
+      4: 'CATORCE',
+      5: 'QUINCE',
+    }
+
+    const dozens = {
+      1: dozenUnits[unit] ?? 'DIECI' + this.getUnits(unit),
+      2: unit === 0 ? 'VEINTE' : 'VEINTI' + this.getUnits(unit),
+      3: this.dozensY('TREINTA', unit),
+      4: this.dozensY('CUARENTA', unit),
+      5: this.dozensY('CINCUENTA', unit),
+      6: this.dozensY('SESENTA', unit),
+      7: this.dozensY('SETENTA', unit),
+      8: this.dozensY('OCHENTA', unit),
+      9: this.dozensY('NOVENTA', unit),
+      0: this.getUnits(unit),
+    }
+    return dozens[dozen] ?? '';
+  }
+
+  public dozensY(strSin, unitNumbers){
+    if (unitNumbers > 0) {
+      return strSin + ' Y ' + this.getUnits(unitNumbers);
+    }
+
+    return strSin;
+  }
+
+  public getHundreds(num){
+
+    const hundredUnit = Math.floor(num / 100);
+    const dozens = num - (hundredUnit * 100);
+
+    const hundreds = {
+      1: dozens > 0 ? 'CIENTO ' + this.getDozens(dozens) : 'CIEN',
+      2: 'DOSCIENTOS ' + this.getDozens(dozens),
+      3: 'TRESCIENTOS ' + this.getDozens(dozens),
+      4: 'CUATROCIENTOS ' + this.getDozens(dozens),
+      5: 'QUINIENTOS ' + this.getDozens(dozens),
+      6: 'SEISCIENTOS ' + this.getDozens(dozens),
+      7: 'SETECIENTOS ' + this.getDozens(dozens),
+      8: 'OCHOCIENTOS ' + this.getDozens(dozens),
+      9: 'NOVECIENTOS ' + this.getDozens(dozens),
+    }
+
+    return hundreds[hundredUnit] ?? this.getDozens(dozens);
+  }
+
+  public section(num, divisor, strSingular, strPlural){
+    const hundreds = Math.floor(num / divisor)
+    const remainder = num - (hundreds * divisor)
+
+    let letters = '';
+
+    if (hundreds > 0) {
+      if (hundreds > 1) {
+        letters = this.getHundreds(hundreds) + ' ' + strPlural;
+      }
+      else {
+        letters = strSingular;
+      }
+    }
+
+    if (remainder > 0) {
+      letters += '';
+    }
+
+    return letters;
+  }
+
+  public thousands(num){
+    const divisor = 1000;
+    const hundreds = Math.floor(num / divisor)
+    const remainder = num - (hundreds * divisor)
+
+    const strThousands = this.section(num, divisor, 'UN MIL', 'MIL');
+    const strHundreds = this.getHundreds(remainder);
+
+    if(strThousands === '') {
+      return strHundreds;
+    }
+
+    return strThousands + ' ' + strHundreds;
+  }
+
+  public millions(num){
+    const divisor = 1000000;
+    const hundreds = Math.floor(num / divisor)
+    const remainder = num - (hundreds * divisor)
+
+    const strMillions = this.section(num, divisor, 'UN MILLON', 'MILLONES');
+    const strThousands = this.thousands(remainder);
+
+    if(strMillions === '') {
+      return strThousands;
+    }
+
+    return strMillions + ' ' + strThousands;
+  }
+
+  public numberToLetters(num){
+    const data = {
+      number: num,
+      integers: Math.floor(num),
+      cents: ((Math.round(num * 100)) - (Math.floor(num) * 100)),
+      lettersToCents: '',
+      pluralCurrency: 'PESOS',
+      singularCurrency: 'PESO'
+    };
+
+    if (data.cents > 0) {
+      data.lettersToCents = 'CON ' + data.cents + '/100';
+    }
+
+    if(data.integers === 0) {
+      return 'CERO ' + data.pluralCurrency + ' ' + data.lettersToCents;
+    }
+    if (data.integers === 1) {
+      return this.millions(data.integers) + ' ' + data.singularCurrency + ' ' + data.lettersToCents;
+    }
+    else {
+      return this.millions(data.integers) + ' ' + data.pluralCurrency + ' ' + data.lettersToCents;
+    }
+  }
